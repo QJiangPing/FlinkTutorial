@@ -1,5 +1,6 @@
 package org.example;
 
+import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -7,7 +8,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.ArrayList;
 
-public class TransformMapTest {
+public class TransformFilterTest {
     public static void main(String[] args) throws Exception{
         //1获取执行环境execution environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -20,20 +21,20 @@ public class TransformMapTest {
         events.add(new Event("wangwu","./login",3000L));
         DataStreamSource<Event> streamSource = env.fromCollection(events);
 
-        //3map转换，将user对象只要里面的名字
-        //方式1，使用自定义类，实现MapFunction接口
-        SingleOutputStreamOperator<String> result1 = streamSource.map(new MyMapper());
+        //3filter转换，过滤出用户名为zhangsan的点击事件
+        //方式1，使用自定义类，传入实现FilterFunction接口的类对象
+        SingleOutputStreamOperator<Event> result1 = streamSource.filter(new MyFilter());
 
-        //方式2，使用匿名类，实现MapFunction接口
-        SingleOutputStreamOperator<String> result2 = streamSource.map(new MapFunction<Event, String>() {
+        //方式2，使用匿名类，实现FilterFunction接口
+        SingleOutputStreamOperator<Event> result2 = streamSource.filter(new FilterFunction<Event>() {
             @Override
-            public String map(Event event) throws Exception {
-                return event.user;
+            public boolean filter(Event event) throws Exception {
+                return event.user.equals("zhangsan");
             }
         });
 
         //方式3，使用lambda表达式
-        SingleOutputStreamOperator<String> result3 = streamSource.map(data -> data.user);
+        SingleOutputStreamOperator<Event> result3 = streamSource.filter(data -> data.user.equals("zhangsan"));
 
         //4将计算结果的输出位置sink
         //result1.print();
@@ -45,11 +46,14 @@ public class TransformMapTest {
 
     }
 
-    public static class MyMapper implements MapFunction<Event,String>{
+
+    //自定义类，实现FilterFunction接口
+    public static class MyFilter implements FilterFunction<Event>{
 
         @Override
-        public String map(Event event) throws Exception {
-            return event.user;
+        public boolean filter(Event event) throws Exception {
+            return event.user.equals("zhangsan");
         }
     }
+
 }
