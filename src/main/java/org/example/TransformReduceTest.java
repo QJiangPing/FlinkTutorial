@@ -44,15 +44,20 @@ public class TransformReduceTest {
                 });
 
         //2.选取当前最活跃的用户
-        SingleOutputStreamOperator<Tuple2<String, Long>> result = clickByUser.keyBy(data -> "key")
+        SingleOutputStreamOperator<Tuple2<String, Long>> result1 = clickByUser.keyBy(data -> "key")
                 .reduce(new ReduceFunction<Tuple2<String, Long>>() {
                     @Override
                     public Tuple2<String, Long> reduce(Tuple2<String, Long> value1, Tuple2<String, Long> value2) throws Exception {
                         return value1.f1 > value2.f1 ? value1 : value2;
                     }
                 });
+
+        //reduce 使用lambda表达式
+        SingleOutputStreamOperator<Tuple2<String, Long>> result2
+                = clickByUser.keyBy(data -> "key").reduce((value1, value2) -> value1.f1 > value2.f1 ? value1 : value2);
         //打印输出
-        result.print();
+        result1.print();
+        result2.print();
 
         env.execute();
     }

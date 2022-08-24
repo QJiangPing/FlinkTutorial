@@ -1,4 +1,4 @@
-package org.example;
+package org.example.wc;
 
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.ExecutionEnvironment;
