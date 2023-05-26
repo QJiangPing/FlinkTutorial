@@ -15,7 +15,6 @@ public class SourceFromKafkaTest {
         //2读取数据源source
         //
         Properties properties = new Properties();
-        //
         properties.setProperty("bootstrap.service","hadoop102:9092");
         properties.setProperty("group.id","consumer-group");
         properties.setProperty("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
