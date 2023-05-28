@@ -23,6 +23,10 @@ import java.util.Map;
  * @author qjp
  */
 public class OrderTimeoutDetectDemo {
+    /**
+     * 侧输出流标签
+     */
+    static OutputTag<String> timeoutTag;
     public static void main(String[] args) throws Exception{
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
@@ -64,8 +68,8 @@ public class OrderTimeoutDetectDemo {
         //2.2 将模式应用到订单数据流上,需要对订单进行key by
         PatternStream<OrderEvent> patternStream = CEP.pattern(orderEventStream.keyBy(data -> data.getOrderId()), pattern);
 
-        //2.3 定义一个侧输出流
-        OutputTag<String> timeoutTag = new OutputTag<String>("timeout"){};
+        //2.3 定义一个侧输出流标签
+        timeoutTag = new OutputTag<String>("timeout"){};
 
         //2.4 将完全匹配和超时匹配部分的复杂事件提取出来，进行处理
         SingleOutputStreamOperator<String> result = patternStream.process(new OrderPayMatch());
@@ -89,7 +93,6 @@ public class OrderTimeoutDetectDemo {
         public void processTimedOutMatch(Map<String, List<OrderEvent>> map, Context context) throws Exception {
             //处理超时的数据
             OrderEvent createEvent = map.get("create").get(0);
-            OutputTag<String> timeoutTag = new OutputTag<String>("timeout"){};
             context.output(timeoutTag,"用户"+createEvent.getUserId()+"订单"+createEvent.getOrderId()+"已超时！！！！！");
         }
     }
